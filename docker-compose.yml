@@ -1,0 +1,47 @@
+services:
+  api:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - SQLITE_PATH=/data/task_tracer.db
+    volumes:
+      # Read-only bind mount of the operator's own SSH keys - see
+      # README.md "SSH access model" and backend/app/ssh/executor.py's
+      # module docstring for the invariant this supports (the app never
+      # accepts/stores a private key itself; it only shells out to `ssh`,
+      # which resolves auth from this mount exactly like a terminal would).
+      - ${HOME}/.ssh:/root/.ssh:ro
+      - sqlite-data:/data
+    depends_on:
+      - redis
+
+  worker:
+    build: ./backend
+    command: ["python", "worker_entry.py"]
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - SQLITE_PATH=/data/task_tracer.db
+    volumes:
+      - ${HOME}/.ssh:/root/.ssh:ro
+      - sqlite-data:/data
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7-alpine
+    # No persistence needed - job state is ephemeral, results land in
+    # SQLite (see PLAN.md "Caching/storage").
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8000
+    depends_on:
+      - api
+
+volumes:
+  sqlite-data:
