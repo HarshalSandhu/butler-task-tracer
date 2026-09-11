@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 COPY pyproject.toml .
 COPY app ./app
+COPY worker_entry.py .
 RUN pip install --no-cache-dir -e .
 
 EXPOSE 8000

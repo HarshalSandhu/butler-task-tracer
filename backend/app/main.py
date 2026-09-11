@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routes import router
+from app.db import init_db
 
 app = FastAPI(
     title="Butler Task Lifecycle Tracer",
@@ -16,6 +17,11 @@ app.add_middleware(
 )
 
 app.include_router(router)
+
+
+@app.on_event("startup")
+def _create_cache_tables() -> None:
+    init_db()
 
 
 @app.get("/health")

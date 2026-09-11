@@ -1,11 +1,21 @@
 services:
   api:
-    build: ./backend
+    build:
+      context: ./backend
+      network: host
     ports:
-      - "8000:8000"
+      - "8001:8000"
     environment:
       - REDIS_URL=redis://redis:6379/0
       - SQLITE_PATH=/data/task_tracer.db
+      # Path only, inside the read-only ~/.ssh mount below - never a key
+      # value itself. Explicit so ssh doesn't fall back to trying every
+      # default identity file in order (fragile if an earlier one is
+      # unreadable/malformed). Change to match whichever key in your
+      # ~/.ssh actually has access to the target boxes.
+      - SSH_KEY_PATH=/root/.ssh/butler_tracer_ed25519
+      # How long ssh waits for a target to respond before giving up.
+      - SSH_CONNECT_TIMEOUT_SECONDS=50
     volumes:
       # Read-only bind mount of the operator's own SSH keys - see
       # README.md "SSH access model" and backend/app/ssh/executor.py's
@@ -18,11 +28,21 @@ services:
       - redis
 
   worker:
-    build: ./backend
+    build:
+      context: ./backend
+      network: host
     command: ["python", "worker_entry.py"]
     environment:
       - REDIS_URL=redis://redis:6379/0
       - SQLITE_PATH=/data/task_tracer.db
+      # Path only, inside the read-only ~/.ssh mount below - never a key
+      # value itself. Explicit so ssh doesn't fall back to trying every
+      # default identity file in order (fragile if an earlier one is
+      # unreadable/malformed). Change to match whichever key in your
+      # ~/.ssh actually has access to the target boxes.
+      - SSH_KEY_PATH=/root/.ssh/butler_tracer_ed25519
+      # How long ssh waits for a target to respond before giving up.
+      - SSH_CONNECT_TIMEOUT_SECONDS=50
     volumes:
       - ${HOME}/.ssh:/root/.ssh:ro
       - sqlite-data:/data
@@ -35,11 +55,13 @@ services:
     # SQLite (see PLAN.md "Caching/storage").
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      network: host
     ports:
-      - "5173:5173"
+      - "5175:5175"
     environment:
-      - VITE_API_BASE_URL=http://localhost:8000
+      - VITE_API_BASE_URL=http://localhost:8001
     depends_on:
       - api
 

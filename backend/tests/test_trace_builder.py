@@ -60,6 +60,14 @@ def test_total_duration(trace):
     assert trace.total_duration_seconds == pytest.approx(470.224, abs=0.01)
 
 
+def test_tote_id_extracted(trace):
+    assert trace.tote_ids == ["00000006"]
+
+
+def test_no_warnings_or_errors_in_a_clean_run(trace):
+    assert trace.has_warnings_or_errors is False
+
+
 def test_phase_durations_match_manual_trace(trace):
     phases = trace.phase_durations()
     assert len(phases) == len(EXPECTED_PHASES)

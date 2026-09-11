@@ -10,13 +10,13 @@
 export function WindowScanPage() {
   return (
     <div className="p-6 max-w-5xl mx-auto">
-      <p className="text-gray-500 text-sm">
+      <p className="text-gray-400 text-sm">
         Batch/window analysis - backend job execution not yet wired (see{' '}
-        <code className="bg-gray-100 px-1">backend/app/jobs.py</code>). The API contract
-        (<code className="bg-gray-100 px-1">POST /api/window</code>,{' '}
-        <code className="bg-gray-100 px-1">POST /api/scan</code>) is in place; this page
-        will poll the returned <code className="bg-gray-100 px-1">job_id</code> and render
-        results via <code className="bg-gray-100 px-1">PhaseDistribution</code> once the
+        <code className="bg-gray-800 text-gray-200 px-1">backend/app/jobs.py</code>). The API contract
+        (<code className="bg-gray-800 text-gray-200 px-1">POST /api/window</code>,{' '}
+        <code className="bg-gray-800 text-gray-200 px-1">POST /api/scan</code>) is in place; this page
+        will poll the returned <code className="bg-gray-800 text-gray-200 px-1">job_id</code> and render
+        results via <code className="bg-gray-800 text-gray-200 px-1">PhaseDistribution</code> once the
         job bodies are implemented.
       </p>
     </div>
