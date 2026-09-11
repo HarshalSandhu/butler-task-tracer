@@ -67,3 +67,16 @@ services:
 
 volumes:
   sqlite-data:
+
+networks:
+  default:
+    # Pinned away from Docker's default auto-allocated 172.17.0.0/16-172.3x.0.0/16 range,
+    # which collides with real internal/GCP subnets (confirmed: this network's default
+    # 172.19.0.0/16 shadowed a real target at 172.19.40.54, making it unreachable from the
+    # host - the VM's routing table treated that address as local to the Docker bridge
+    # instead of routing it out). 10.250.x.x is well outside typical corporate RFC1918
+    # ranges (usually 10.0-10.99 or 172.16-172.31), so it shouldn't collide with anything
+    # this tool needs to actually reach over SSH.
+    ipam:
+      config:
+        - subnet: 10.250.0.0/16
