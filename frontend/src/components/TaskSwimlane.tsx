@@ -30,6 +30,7 @@ import {
 } from '../lib/baselines'
 import { exportTaskTimingToExcel } from '../lib/exportExcel'
 import { downloadTaskFullLogs } from '../lib/exportLogs'
+import { downloadViewAsHtml } from '../lib/exportHtml'
 
 /**
  * Gantt/swimlane view of one task's phase-by-phase movement, per
@@ -625,6 +626,7 @@ export function TaskSwimlane({
   const [historyState, setHistoryState] = useState<'idle' | 'loading' | 'error'>('idle')
   const [exportState, setExportState] = useState<'idle' | 'exporting' | 'error'>('idle')
   const [logsExportState, setLogsExportState] = useState<'idle' | 'exporting' | 'error'>('idle')
+  const [htmlExportState, setHtmlExportState] = useState<'idle' | 'exporting' | 'error'>('idle')
 
   // TaskSwimlane stays mounted across different tasks (same route, new
   // data) -- without this, a "saved"/history state from the PREVIOUS
@@ -635,6 +637,7 @@ export function TaskSwimlane({
     setHistoryState('idle')
     setExportState('idle')
     setLogsExportState('idle')
+    setHtmlExportState('idle')
   }, [taskId])
 
   const handleSaveBenchmarkResult = async () => {
@@ -702,6 +705,17 @@ export function TaskSwimlane({
       setLogsExportState('idle')
     } catch {
       setLogsExportState('error')
+    }
+  }
+
+  const handleExportToHtml = async () => {
+    if (!taskId) return
+    setHtmlExportState('exporting')
+    try {
+      await downloadViewAsHtml({ taskId, title: `${taskType ?? taskId} - ${taskId}` })
+      setHtmlExportState('idle')
+    } catch {
+      setHtmlExportState('error')
     }
   }
 
@@ -784,6 +798,16 @@ export function TaskSwimlane({
               🗒️ {logsExportState === 'exporting' ? 'Fetching all logs...' : 'Download all logs'}
             </button>
             {logsExportState === 'error' && <span className="text-red-400">fetch failed</span>}
+            <button
+              type="button"
+              onClick={handleExportToHtml}
+              disabled={htmlExportState === 'exporting'}
+              title="Download this rendered trace view as a self-contained HTML file (openable offline)"
+              className="text-gray-300 hover:text-gray-100 disabled:text-gray-500 border border-gray-700 rounded px-2 py-1 transition-colors"
+            >
+              🌐 {htmlExportState === 'exporting' ? 'Rendering HTML...' : 'Export to HTML'}
+            </button>
+            {htmlExportState === 'error' && <span className="text-red-400">export failed</span>}
           </div>
         )}
       </div>
